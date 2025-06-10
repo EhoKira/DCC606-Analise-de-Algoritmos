@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 void insertion_sort(int *arr, int n, long long *comparacoes) {
     for (int i = 1; i < n; i++) {
         int chave = arr[i];

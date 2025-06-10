@@ -11,6 +11,7 @@ void quick_sort(int *arr, int l, int r, long long *comparacoes);
 
 #define REPETICOES 3
 
+// Leitura do arquivo
 int* ler_arquivo(const char *nome, int *tamanho) {
     FILE *fp = fopen(nome, "r");
     if (!fp) {
@@ -47,12 +48,14 @@ int* ler_arquivo(const char *nome, int *tamanho) {
     return vetor;
 }
 
+// Copiar vetor
 void copiar_array(int *origem, int *destino, int n) {
     for (int i = 0; i < n; i++) {
         destino[i] = origem[i];
     }
 }
 
+// Teste de algoritmo
 void testar_algoritmo(const char *arquivo, const char *algoritmo, FILE *saida) {
     int n;
     int *original = ler_arquivo(arquivo, &n);
@@ -75,6 +78,7 @@ void testar_algoritmo(const char *arquivo, const char *algoritmo, FILE *saida) {
         long long comparacoes = 0;
         clock_t ini = clock();
 
+        // Seleção do algoritmo
         if (strcmp(algoritmo, "bubble") == 0)
             bubble_sort(copia, n, &comparacoes);
         else if (strcmp(algoritmo, "insertion") == 0)
@@ -94,7 +98,7 @@ void testar_algoritmo(const char *arquivo, const char *algoritmo, FILE *saida) {
         total_comparacoes += comparacoes;
         total_tempo += (double)(fim - ini) / CLOCKS_PER_SEC;
 
-        // Escreve os dados de cada repetição
+        // Escreve os dados de cada repetição no CSV
         fprintf(saida, "%s,%s,%d,%lld,%.6f\n", algoritmo, arquivo, n, comparacoes,
                 (double)(fim - ini) / CLOCKS_PER_SEC);
     }
@@ -109,18 +113,14 @@ void testar_algoritmo(const char *arquivo, const char *algoritmo, FILE *saida) {
 }
 
 int main() {
-    const char *algoritmo = "bubble";
-    const char *tipo = "random";
-    int tamanho = 1000000;
+    const char *algoritmos[] = { "bubble", "insertion", "merge", "quick" };
+    const char *tipos[] = { "sorted", "random", "desc" };
+    int tamanhos[] = { 1000, 5000, 10000, 50000, 100000, 250000, 500000, 750000, 1000000 }; // 9 tamanhos
 
-    char nome_arquivo[100];
-    sprintf(nome_arquivo, "entradas/entrada_%d_%s.txt", tamanho, tipo);
-
-    printf("Iniciando teste único de performance...\n");
+    printf("Iniciando testes de performance dos algoritmos...\n");
 
     // Abrir o arquivo CSV no modo append
-    FILE *saida = fopen("resultados/teste_unico.csv", "a"); 
-
+    FILE *saida = fopen("resultados/resultados_3repeticoes.csv", "a"); 
     if (!saida) {
         perror("Erro ao abrir arquivo CSV");
         return 1;
@@ -129,10 +129,21 @@ int main() {
     // Escreve o cabeçalho no arquivo CSV
     fprintf(saida, "algoritmo,tipo,tamanho,comparacoes,tempo\n");
 
-    // Realiza o teste para o algoritmo específico
-    testar_algoritmo(nome_arquivo, algoritmo, saida);
+    // Laços para rodar os 4 algoritmos, 3 tipos de entrada e 9 tamanhos
+    for (int a = 0; a < 4; a++) {
+        for (int t = 0; t < 3; t++) {
+            for (int s = 0; s < 9; s++) {
+                char nome_arquivo[100];
+                sprintf(nome_arquivo, "entradas/entrada_%d_%s.txt", tamanhos[s], tipos[t]);
+                printf("Rodando %s em %s...\n", algoritmos[a], nome_arquivo);
+                testar_algoritmo(nome_arquivo, algoritmos[a], saida);
+                printf("----------\n");
+            }
+        }
+    }
 
     fclose(saida);
-    printf("Resultado salvo em 'resultados/teste_unico.csv'\n");
+    printf("Todos os resultados foram salvos em 'resultados/resultados_3repeticoes.csv'\n");
+    printf("Fim da execucao.\n");
     return 0;
 }
