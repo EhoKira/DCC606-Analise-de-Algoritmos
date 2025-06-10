@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-
-long long comparacoes = 0;
 
 void trocar(int *a, int *b) {
     int temp = *a;
@@ -10,12 +7,12 @@ void trocar(int *a, int *b) {
     *b = temp;
 }
 
-int particionar(int *arr, int baixo, int alto) {
+int particionar(int *arr, int baixo, int alto, long long *comparacoes) {
     int pivo = arr[alto];
     int i = baixo - 1;
 
     for (int j = baixo; j < alto; j++) {
-        comparacoes++;
+        (*comparacoes)++;  // Incrementa a comparação
         if (arr[j] <= pivo) {
             i++;
             trocar(&arr[i], &arr[j]);
@@ -25,74 +22,11 @@ int particionar(int *arr, int baixo, int alto) {
     return i + 1;
 }
 
-void quick_sort(int *arr, int baixo, int alto) {
-    int tamanho = alto - baixo + 1;
-    int *pilha = malloc(sizeof(int) * 2 * tamanho); // Pilha com o dobro do tamanho
+void quick_sort(int *arr, int baixo, int alto, long long *comparacoes) {
+    if (baixo < alto) {
+        int pi = particionar(arr, baixo, alto, comparacoes);
 
-    int topo = -1;
-    pilha[++topo] = baixo;
-    pilha[++topo] = alto;
-
-    while (topo >= 1) {
-        alto = pilha[topo--];
-        baixo = pilha[topo--];
-
-        int pi = particionar(arr, baixo, alto);
-
-        if (pi - 1 > baixo) {
-            pilha[++topo] = baixo;
-            pilha[++topo] = pi - 1;
-        }
-        if (pi + 1 < alto) {
-            pilha[++topo] = pi + 1;
-            pilha[++topo] = alto;
-        }
+        quick_sort(arr, baixo, pi - 1, comparacoes);
+        quick_sort(arr, pi + 1, alto, comparacoes);
     }
-    free(pilha);
-}
-
-// Leitura de arquivo
-int* ler_arquivo(char *nome_arquivo, int *tamanho) {
-    FILE *fp = fopen(nome_arquivo, "r");
-    if (!fp) {
-        perror("Erro ao abrir arquivo");
-        exit(1);
-    }
-
-    int capacidade = 1000;
-    int *vetor = malloc(sizeof(int) * capacidade);
-    int valor, count = 0;
-
-    while (fscanf(fp, "%d", &valor) == 1) {
-        if (count >= capacidade) {
-            capacidade *= 2;
-            vetor = realloc(vetor, sizeof(int) * capacidade);
-        }
-        vetor[count++] = valor;
-    }
-
-    fclose(fp);
-    *tamanho = count;
-    return vetor;
-}
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Uso: %s arquivo_entrada.txt\n", argv[0]);
-        return 1;
-    }
-
-    int n;
-    int *arr = ler_arquivo(argv[1], &n);
-
-    comparacoes = 0;
-    clock_t inicio = clock();
-    quick_sort(arr, 0, n - 1);
-    clock_t fim = clock();
-    
-    printf("Comparacoes: %lld\n", comparacoes);
-    printf("Tempo de execucao (s): %.6f\n", (double)(fim - inicio) / CLOCKS_PER_SEC);
-
-    free(arr);
-    return 0;
 }
